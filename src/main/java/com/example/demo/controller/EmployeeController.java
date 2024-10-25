@@ -25,9 +25,9 @@ public class EmployeeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<List<Employee>> getAllEmployees(@PathVariable String id) {
+    public ResponseEntity<Employee> getAllEmployees(@PathVariable Integer id) {
         logger.info("Getting all employees ");
-        return ResponseEntity.ok(EmployeesDB.getAllEmployees());
+        return ResponseEntity.ok(EmployeesDB.getAllEmployees().get(id - 1));
     }
 
 }
