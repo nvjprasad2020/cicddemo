@@ -7,7 +7,8 @@ import java.util.List;
 
 public class EmployeesDB {
     private static List<Employee> employeeList = new ArrayList<>();
-    {
+
+    static {
         employeeList.add(new Employee(1, "John Doe", "Software Engineer", 75000.0f));
         employeeList.add(new Employee(2, "Jane Smith", "Project Manager", 85000.0f));
         employeeList.add(new Employee(3, "Michael Brown", "DevOps Engineer", 70000.0f));
