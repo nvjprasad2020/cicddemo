@@ -26,7 +26,7 @@ public class EmployeeController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Employee> getAllEmployees(@PathVariable Integer id) {
-        logger.info("Getting all employees ");
+        logger.info("Getting given employee ");
         return ResponseEntity.ok(EmployeesDB.getAllEmployees().get(id - 1));
     }
 
