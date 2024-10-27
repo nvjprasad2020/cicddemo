@@ -1,0 +1,84 @@
+name: CI/CD Pipeline for Elastic Beanstalk
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  AWS_REGION: 'eu-north-1'
+  EBS_APPLICATION_NAME: 'cicd-demo-app'
+  EBS_ENVIRONMENT_NAME: 'cicd-demo-app-env'
+  S3_BUCKET: 'elasticbeanstalk-eu-north-1-471112946188'
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Stage: Checkout Code
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # Stage: Build
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+
+      - name: Build Project with Maven
+        run: mvn clean package
+
+      # Stage: Upload JAR to S3
+      - name: Upload JAR to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws s3 cp target/cicd-demo-0.0.1.jar s3://$S3_BUCKET/cicddemo.jar --region $AWS_REGION
+
+      # Stage: Deploy to Elastic Beanstalk
+      - name: Deploy to Elastic Beanstalk
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          VERSION_LABEL="v${{ github.run_number }}-$(date +'%Y%m%d%H%M%S')"
+          
+          # Create a new application version
+          aws elasticbeanstalk create-application-version \
+            --application-name $EBS_APPLICATION_NAME \
+            --version-label $VERSION_LABEL \
+            --source-bundle S3Bucket=$S3_BUCKET,S3Key=cicddemo.jar \
+            --region $AWS_REGION
+
+          # Deploy the new version to the environment
+          aws elasticbeanstalk update-environment \
+            --environment-name $EBS_ENVIRONMENT_NAME \
+            --version-label $VERSION_LABEL \
+            --region $AWS_REGION
+
+          # Wait until the environment is ready
+          for i in {1..10}; do
+            STATUS=$(aws elasticbeanstalk describe-environments --environment-names $EBS_ENVIRONMENT_NAME --query 'Environments[0].Status' --output text --region $AWS_REGION)
+            echo "EBS Environment Status: ${STATUS}"
+            if [ "$STATUS" == "Ready" ]; then
+              break
+            fi
+            sleep 30
+          done
+
+      # Stage: Run Postman Tests
+      - name: Install Newman (Postman CLI)
+        run: npm install -g newman
+
+      - name: Run Postman Tests
+        run: |
+          newman run postman/cicddemo.postman_collection.json -e postman/cicd-prod-env.postman_environment.json
+
+    # Post-Stage Messages
+    post:
+      success:
+        run: echo 'Deployment was successful!'
+      failure:
+        run: echo 'Deployment failed!'
