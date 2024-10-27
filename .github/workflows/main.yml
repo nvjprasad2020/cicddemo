@@ -76,9 +76,11 @@ jobs:
         run: |
           newman run postman/cicddemo.postman_collection.json -e postman/cicd-prod-env.postman_environment.json
 
-    # Post-Stage Messages
-    post:
-      success:
+      # Final Notifications
+      - name: Deployment Success Notification
+        if: ${{ success() }}
         run: echo 'Deployment was successful!'
-      failure:
+
+      - name: Deployment Failure Notification
+        if: ${{ failure() }}
         run: echo 'Deployment failed!'
