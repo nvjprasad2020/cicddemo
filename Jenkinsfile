@@ -32,9 +32,31 @@ pipeline {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials']]) {
                     script {
                         def versionLabel = "v${env.BUILD_NUMBER}-${new Date().format('yyyyMMddHHmmss')}"
+
                         sh "aws elasticbeanstalk create-application-version --application-name $EBS_APPLICATION_NAME --version-label ${versionLabel} --source-bundle S3Bucket=$S3_BUCKET,S3Key=cicddemo.jar --region $AWS_REGION"
+
                         sh "aws elasticbeanstalk update-environment --environment-name $EBS_ENVIRONMENT_NAME --version-label ${versionLabel} --region $AWS_REGION"
+
+                        timeout(time: 5, unit: 'MINUTES') {
+                            waitUntil {
+                                script {
+                                    def status = sh(
+                                        script: "aws elasticbeanstalk describe-environments --environment-names $EBS_ENVIRONMENT_NAME --query 'Environments[0].Status' --output text --region $AWS_REGION",
+                                        returnStdout: true
+                                    ).trim()
+                                    echo "EBS Environment Status: ${status}"
+                                    return status == "Ready"
+                                }
+                            }
+                        }
                     }
+                }
+            }
+        }
+        stage('Run Postman Tests') {
+            steps {
+                script {
+                    sh 'newman run postman/cicddemo.postman_collection.json -e postman/cicd-prod-env.postman_environment.json'
                 }
             }
         }
