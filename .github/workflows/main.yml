@@ -25,7 +25,10 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: '17'
-
+          java-package: 'jdk'
+          architecture: 'x64'
+          check-latest: false
+          overwrite-settings: true
       - name: Build Project with Maven
         run: mvn clean package
 
