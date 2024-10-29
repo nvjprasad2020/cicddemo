@@ -2,32 +2,35 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_REGISTRY = 'docker.io'
-        DOCKER_IMAGE = 'cicddemo'
+        DOCKER_REGISTRY = '' // Leave empty for Docker Hub
+        DOCKER_IMAGE = 'nvjprasad/cicddemo'
         DOCKER_TAG = 'latest'
-        KUBE_CONFIG_PATH = '/home/jenkins/.kube/config'
+        KUBE_CONFIG_PATH = '/home/jp/.kube/config'
     }
 
     stages {
         stage('Clone repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/yourusername/yourrepository.git'
+                git branch: 'master', url: 'https://github.com/nvjprasad2020/cicddemo.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh "docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                    sh "docker build -t ${DOCKER_REGISTRY}${DOCKER_IMAGE}:${DOCKER_TAG} ."
                 }
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                script {
-                    sh "docker login -u nvjprasad -p your-docker-password ${DOCKER_REGISTRY}"
-                    sh "docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}"
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    script {
+                        sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD ${DOCKER_REGISTRY}"
+                        // Push the Docker image to the specified registry
+                        sh "docker push ${DOCKER_REGISTRY}${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    }
                 }
             }
         }
@@ -35,8 +38,9 @@ pipeline {
         stage('Deploy to Minikube') {
             steps {
                 script {
-                    sh "kubectl apply -f k8s/deployment.yaml"
-                    sh "kubectl apply -f k8s/service.yaml"
+                    // Apply the Kubernetes deployment and service configurations
+                    sh "kubectl --kubeconfig=${KUBE_CONFIG_PATH} apply -f k8s/deployment.yaml"
+                    sh "kubectl --kubeconfig=${KUBE_CONFIG_PATH} apply -f k8s/service.yaml"
                 }
             }
         }
@@ -45,7 +49,8 @@ pipeline {
     post {
         always {
             script {
-                sh "docker rmi ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}"
+                // Remove the Docker image to clean up
+                sh "docker rmi ${DOCKER_REGISTRY}${DOCKER_IMAGE}:${DOCKER_TAG} || true"
             }
         }
     }
