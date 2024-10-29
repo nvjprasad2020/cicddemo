@@ -1,7 +1,7 @@
 pipeline {
     agent any
     stages {
-        stage('Hello') {
+        stage('A test stage for dummy message') {
             steps {
                 echo 'There are some changes checked in to your repo'
             }
