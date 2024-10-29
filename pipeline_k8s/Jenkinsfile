@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_REGISTRY = '' // Leave empty for Docker Hub
+        DOCKER_REGISTRY = ''
         DOCKER_IMAGE = 'nvjprasad/cicddemo'
         DOCKER_TAG = 'latest'
         KUBE_CONFIG_PATH = '/home/jp/.kube/config'
