@@ -4,3 +4,4 @@ it demonstrate
 2. Docker k8s
 3. github webhook
 4. docker push
+5. docker pull
