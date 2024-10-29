@@ -15,7 +15,7 @@ public class EmployeesDB {
         employeeList.add(new Employee(2, "Siva Raj", "Project Manager", 85000.0f));
         employeeList.add(new Employee(3, "Kiran Kumar", "DevOps Engineer", 70000.0f));
         employeeList.add(new Employee(4, "Pavan Sankar", "Business Analyst", 65000.0f));
-        employeeList.add(new Employee(5, "Viswa Prasad", "QA Engineer", 60000.0f));
+        employeeList.add(new Employee(5, "Viswa Prasad", "QA Engineer", 80000.0f));
     }
 
     public  List<Employee> getAllEmployees() {
