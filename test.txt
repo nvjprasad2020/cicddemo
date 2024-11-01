@@ -1,2 +1,0 @@
-a test, adding some text .. for testing
-another line is added.
