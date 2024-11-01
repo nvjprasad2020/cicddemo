@@ -1,2 +1,1 @@
-A demo for CICD AWS EBS and K8s in minikube.
-A line is added for testing
+this is a test
