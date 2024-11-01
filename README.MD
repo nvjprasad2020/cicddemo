@@ -1,2 +1,1 @@
-A demo for cicd using jenkins pipeline and k8s
-one more line added.
+A demo for CICD AWS EBS and K8s in minikube.
