@@ -9,6 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class HomeController {
     @GetMapping
     public String getMessage(){
-        return "Hello, User-2 Welcome to my home page.";
+        return "Hello, User-1 Welcome to my home page.";
     }
 }
