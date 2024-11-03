@@ -1,5 +1,2 @@
 this is a test file
-
-Another line is added
-
-there is a line added for test
+Another line is addedthere is a line added for test
